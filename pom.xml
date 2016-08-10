@@ -1,0 +1,404 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.infohow.srm</groupId>
+	<artifactId>srm-web</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spring.version>3.0.5.RELEASE</spring.version>
+		<java-version>1.6</java-version>
+		<org.aspectj-version>1.6.9</org.aspectj-version>
+		<org.slf4j-version>1.6.1</org.slf4j-version>
+	</properties>
+
+	<!-- 设定除中央仓库(repo1.maven.org/maven2/)外的其他仓库,按设定顺序进行查找. -->
+	<repositories>
+		<repository>
+			<id>nexus</id>
+			<url>http://10.86.87.140:8081/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>snapshots</id>
+			<url>http://10.86.87.140:8081/nexus/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>offical</id>
+			<name>Maven Official Repository</name>
+			<url>http://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>nexus</id>
+			<name>Team Nexus Repository</name>
+			<url>http://10.86.87.140:8081/nexus/content/groups/public</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>nexus snapshots</id>
+			<name>nexus snapshots</name>
+			<url>http://10.86.87.104:8081/nexus/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<!-- 设定团队持续集成发布包服务器 -->
+	<distributionManagement>
+		<repository>
+			<id>nexus-release</id>
+			<name>Team Nexus Release Repository</name>
+			<url>http://10.86.87.140:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>Team Nexus Snapshot Repository</name>
+			<url>http://10.86.87.140:8081/nexus/content/repositories/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+	<!-- 在conf\settings.xml中增加以下信息 <servers> <server> <id>nexus-snapshots</id> 
+		<username>deployment</username> <password>123456</password> </server> <server> 
+		<id>nexus-release</id> <username>deployment</username> <password>123456</password> 
+		</server> <server> <id>tomcat</id> <username>tomcat</username> <password>s3cret</password> 
+		</server> </servers> -->
+
+	<build>
+		<finalName>srm-web</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${java-version}</source>
+					<target>${java-version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>6.1.26</version>
+				<configuration>
+					<contextPath>/${project.build.finalName}</contextPath>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
+					<stopPort>9966</stopPort>
+					<stopKey>jetty</stopKey>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.sap.jco</groupId>
+									<artifactId>jco-win-x32-dll</artifactId>
+									<version>3.0.5</version>
+									<type>dll</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/lib</outputDirectory>
+									<destFileName>sapjco3.dll</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>com.sap.jco</groupId>
+									<artifactId>jco-win-x32</artifactId>
+									<version>3.0.5</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/lib</outputDirectory>
+									<destFileName>sapjco3.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<!-- 依赖包引入 -->
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.6.11</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>hessian</artifactId>
+			<version>4.0.7</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${org.slf4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+
+		<!-- Servlet -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- Jackson JSON Processor -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-ext</artifactId>
+			<version>3.0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring-ext</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>jdbc.ojdbc</groupId>
+			<artifactId>jdbc</artifactId>
+			<version>14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.16</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>tomcat</groupId>
+			<artifactId>catalina-manager</artifactId>
+			<version>5.5.23</version>
+		</dependency>    
+		
+		<!-- 平台相关 --> 
+		<dependency>
+			<groupId>cn.infohow.platform</groupId>
+			<artifactId>platform-schedule</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<!-- 在uac中将间接引入core,sys,util -->
+		<dependency>
+			<groupId>cn.infohow.platform</groupId>
+			<artifactId>platform-uac</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>  
+		<dependency>
+			<groupId>cn.infohow.platform</groupId>
+			<artifactId>platform-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>  
+		<dependency>
+			<groupId>cn.infohow.platform</groupId>
+			<artifactId>platform-util</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>  
+		<dependency>
+			<groupId>cn.infohow.platform</groupId>
+			<artifactId>platform-sys</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>  
+		
+		
+		<!-- add by LiuZhouming -->
+		<!-- sap jco -->
+		<dependency>
+	        <groupId>com.sap.jco</groupId>
+	        <artifactId>jco-win-x32</artifactId>
+	        <version>3.0.5</version>
+        </dependency>
+        <dependency>
+	        <groupId>com.sap.jco</groupId>
+	        <artifactId>jco-win-x32-dll</artifactId>
+	        <version>3.0.5</version>
+	        <type>dll</type>
+        </dependency>
+        <!-- sql server jdbc driver -->
+        <dependency>
+            <groupId>sqljdbc</groupId>
+            <artifactId>sqljdbc4</artifactId>
+            <version>1.5.0_22-b03</version>
+        </dependency>
+        <!-- POI -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.5-FINAL</version>
+        </dependency>
+        <!-- CXF
+        <dependency>
+        	<groupId>org.apache.cxf</groupId>
+        	<artifactId>cxf-api</artifactId>
+        	<version>2.4.3</version>
+        </dependency> -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-bundle</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+        <!-- CGLIB2 For com.infohow.framework.app.bean.BeanFactory -->
+        <dependency>
+	        <groupId>cglib</groupId>
+	        <artifactId>cglib</artifactId>
+	        <version>2.2</version>
+        </dependency>
+        <!-- FOR jFreeChart -->
+        <dependency>
+	        <groupId>org.jfree</groupId>
+	        <artifactId>jfreechart</artifactId>
+	        <version>1.0.14</version>
+        </dependency>
+        <!-- End FOR jFreeChart -->
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <!--  -->
+        <dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.9.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>1.9.9</version>
+		</dependency>
+
+		<!-- <dependency> <groupId>org.sitemesh</groupId> <artifactId>sitemesh</artifactId> 
+			<version>3.0-alpha-2</version> </dependency> -->
+	</dependencies>
+</project>
